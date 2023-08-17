@@ -1,0 +1,5 @@
+X represents a truck, packages to be delivered with, or a time
+tX = truck x
+wX,Y,Z = With other packages
+iX = incorrect address (hold status) until time X
+dX= delayed until x

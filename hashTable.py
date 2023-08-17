@@ -91,6 +91,6 @@ class ChainingHashTable:
 
         # remove the item from the bucket list if it is present.
         for kv in bucket_list:
-          #print (key_value)
+          #print(key_value)
           if kv[0] == key:
               bucket_list.remove([kv[0],kv[1]])
