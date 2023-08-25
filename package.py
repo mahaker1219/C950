@@ -7,11 +7,9 @@ class Package:
     def __init__(self, pid, address, city, state, zip_code, delivery_deadline, weight, special_notes=''):
         def derive_special_notes():
             if self.special_notes != '':
-                print('special note true')
                 spec = str(self.special_notes)
                 if spec[0] == 't':
                     self.truck_preference = spec[1]
-                    print('truck preference')
 
                 elif spec[0] == 'w':
                     output_array = []
@@ -22,20 +20,20 @@ class Package:
                             active_number = ""
                         else:
                             active_number += i
-                    print('Following ' + str(output_array))
                     self.follow = output_array
 
                 elif spec[0] == 'i':
-                    print('incorrect address')
                     self.hold = True
 
                 elif spec[0] == 'd':
                     self.hold = True
                     self.hold_time = datetime.datetime.strptime(spec[1:], '%H:%M').time()
-                    print('Delayed until: ' + str(self.hold_time))
 
         self.pid = pid
-        self.address = "%s, %s, %s %s" % (address, city, state, zip_code)
+        self.address = address
+        self.city = city
+        self.state = state
+        self.zip_code = zip_code
         self.delivery_deadline = delivery_deadline
         self.weight = weight
         self.special_notes = special_notes
