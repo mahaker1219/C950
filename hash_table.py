@@ -10,8 +10,10 @@ class ChainingHashTable:
     def __init__(self, initial_capacity=10):
         # initialize the hash table with empty bucket list entries.
         self.table = []
+        self.packages_count = 0
         for i in range(initial_capacity):
             self.table.append([])
+
 
     # Inserts a new item into the hash table.
     ''' 
@@ -40,6 +42,7 @@ class ChainingHashTable:
         # if not, insert the item to the end of the bucket list.
         key_value = [key, item]
         bucket_list.append(key_value)
+        self.packages_count += 1
         return True
 
     # Searches for an item with matching key in the hash table.

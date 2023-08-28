@@ -7,6 +7,7 @@ class Package:
     def __init__(self, pid, address, city, state, zip_code, delivery_deadline, weight, special_notes=''):
         def derive_special_notes():
             if self.special_notes != '':
+                self.special_notes_exists = True
                 spec = str(self.special_notes)
                 if spec[0] == 't':
                     self.truck_preference = spec[1]
@@ -28,6 +29,8 @@ class Package:
                 elif spec[0] == 'd':
                     self.hold = True
                     self.hold_time = datetime.datetime.strptime(spec[1:], '%H:%M').time()
+            else:
+                self.special_notes_exists = False
 
         self.pid = pid
         self.address = address
@@ -43,6 +46,7 @@ class Package:
         self.delivery_time = datetime.time(0, 0, 0)
         self.truck_preference = 0
         self.follow = []
+        self.address_id = None
         derive_special_notes()
 
     def update_address(self, new_address):
@@ -62,10 +66,7 @@ class Package:
 
     def __str__(self):
         return ("%s, %s, Delivery Deadline: %s Weight: %s, %s, Hold: %s, Hold Time: %s, "
-                "Status: %s, Delivery Time: %s" % (
+                "Status: %s, Delivery Time: %s Address ID: %s Special: %s" % (
                     self.pid, self.address, self.delivery_deadline, self.weight,
-                    self.special_notes, self.hold, self.hold_time, self.status, self.delivery_time
+                    self.special_notes, self.hold, self.hold_time, self.status, self.delivery_time, self.address_id, self.special_notes_exists
                 ))
-
-
-
