@@ -42,9 +42,11 @@ def load_package(filename, hash_t):
 
             hash_t.insert(pid, package_object)
 
+
 """
 Loads distance data from CSV and prepares the address and distance tables.
 """
+
 
 def load_distances(filename):
     counter = 0
@@ -68,63 +70,26 @@ def load_distances(filename):
 """This will take a list and a term and return the index of the list that
 the term is found"""
 
+
 def list_search(arr, term):
     for i in range(len(arr)):
         if arr[i] == term:
             return i
     return None
 
+
 """
 Calculates the distance between two addresses using the distance_table.
 """
-def distance_between(address1, address2, distance_table, address_list,
-                     starter_index=None):
-    if starter_index is None:
-        ind1 = None
-        ind2 = None
-        if list_search(address_list, address1) is not None:
-            ind1 = list_search(address_list, address1)
-        if list_search(address_list, address2) is not None:
-            ind2 = list_search(address_list, address2)
-        if ind1 is not None and ind2 is not None:
-            if distance_table[ind1][ind2] != '':
-                return distance_table[ind1][ind2]
-            else:
-                return distance_table[ind2][ind1]
-        else:
-            print('Problem with index derivation')
-            return None
-    else:
-        ind1 = starter_index
-        ind2 = None
-        if list_search(address_list, address2) is not None:
-            ind2 = list_search(address_list, address2)
-        if ind1 is not None and ind2 is not None:
-            if distance_table[ind1][ind2] != '':
-                return distance_table[ind1][ind2]
-            else:
-                return distance_table[ind2][ind1]
-        else:
-            print('Problem with index derivation')
-            return None
 
-"""
-Finds the index of the nearest package based on the current address.
-"""
-def min_distance_from(address_currently_at, packages):
-    current_address_index = list_search(packages, address_currently_at)
-    min_distance = 1000
-    index_min_value = None
-    for i in range(len(packages)):
-        package_distance = distance_between(address_currently_at, packages[i], starter_index=current_address_index)
-        if package_distance << min_distance:
-            min_distance = package_distance
-            index_min_value = i
-    return index_min_value, min_distance
+
+
+
 
 """
 Fills the address_id field in the package_table based on address_list.
 """
+
 
 def address_id_filler(address_list, package_table, packages_amount):
     testing_list = []
@@ -139,9 +104,12 @@ def address_id_filler(address_list, package_table, packages_amount):
                 testing_list.append(False)
     return testing_list
 
+
 """
 Loads packages onto trucks based on special instructions, deadlines, and addresses.
 """
+
+
 def load_packages(packages, address_list, distance_table_list):
     truck_capacity = 16
     departure_time1 = 0
@@ -245,10 +213,10 @@ def load_packages(packages, address_list, distance_table_list):
         package = packages.search(i)
         truck3.load_package(package)
 
-    print(hub_packages)
+    """print(hub_packages)
 
-    """This is the consoling module in order to 
-    see if data is moving as expected"""
+    This is the consoling module in order to 
+    see if data is moving as expected
     print('truck1', len(truck1.packages_on))
     for i in truck1.packages_on:
         print(i)
@@ -258,16 +226,27 @@ def load_packages(packages, address_list, distance_table_list):
     print('truck3', len(truck3.packages_on))
     for i in truck3.packages_on:
         print(i)
-    print(hub_packages)
+    print(hub_packages)"""
+    return trucks
+
+"""This is going to input the 3 loaded trucks and output an ordered array of events"""
+def deliver_packages(trucks):
+    event_array = []
+
+    return event_array
+
 
 # Initialize the package table
 init_package_table = hash_table.ChainingHashTable()
 load_package('supporting_documentation/packageFile.csv', init_package_table)
 
+
+
 # Load distance data
 address_list, distance_table_list = load_distances('supporting_documentation/WGUPS_distance_table.csv')
 address_id_filler(address_list, init_package_table, init_package_table.packages_count)
-load_packages(init_package_table, address_list, init_package_table)
+trucks = load_packages(init_package_table, address_list, init_package_table)
+event_array = deliver_packages(trucks)
 
 # Console application loop
 while True:

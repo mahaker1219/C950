@@ -57,7 +57,11 @@ class Package:
 
     def load(self, truck):
         # need to add state change functionality here
-        self.status = "en route on truck " + str(truck)
+        self.status = "loaded on truck  " + str(truck)
+
+    def depart(self, truck):
+        # need to add state change functionality here
+        self.status = "en route on truck  " + str(truck)
 
     def deliver(self, time):
         # need to add state change functionality here
