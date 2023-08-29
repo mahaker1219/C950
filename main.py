@@ -14,7 +14,10 @@ import package
 import csv
 import truck
 import math
-"""This will be where I initialize the csvs and objects in order for the algo to begin"""
+
+"""
+This will be where I initialize the csvs and objects in order for the algo to begin
+"""
 
 
 def load_package(filename, hash_t):
@@ -39,6 +42,9 @@ def load_package(filename, hash_t):
 
             hash_t.insert(pid, package_object)
 
+"""
+Loads distance data from CSV and prepares the address and distance tables.
+"""
 
 def load_distances(filename):
     counter = 0
@@ -59,24 +65,19 @@ def load_distances(filename):
     return address_list, distance_table_list
 
 
-init_package_table = hash_table.ChainingHashTable()
-
-load_package('supporting_documentation/packageFile.csv', init_package_table)
-
-address_list, distance_table_list = load_distances('supporting_documentation/WGUPS_distance_table.csv')
-
 """This will take a list and a term and return the index of the list that
 the term is found"""
 
-
-def list_search(list, term):
-    for i in range(len(list)):
-        if list[i] == term:
+def list_search(arr, term):
+    for i in range(len(arr)):
+        if arr[i] == term:
             return i
     return None
 
-
-def distance_between(address1, address2, distance_table=distance_table_list, address_list=address_list,
+"""
+Calculates the distance between two addresses using the distance_table.
+"""
+def distance_between(address1, address2, distance_table, address_list,
                      starter_index=None):
     if starter_index is None:
         ind1 = None
@@ -107,7 +108,9 @@ def distance_between(address1, address2, distance_table=distance_table_list, add
             print('Problem with index derivation')
             return None
 
-
+"""
+Finds the index of the nearest package based on the current address.
+"""
 def min_distance_from(address_currently_at, packages):
     current_address_index = list_search(packages, address_currently_at)
     min_distance = 1000
@@ -119,6 +122,9 @@ def min_distance_from(address_currently_at, packages):
             index_min_value = i
     return index_min_value, min_distance
 
+"""
+Fills the address_id field in the package_table based on address_list.
+"""
 
 def address_id_filler(address_list, package_table, packages_amount):
     testing_list = []
@@ -133,8 +139,10 @@ def address_id_filler(address_list, package_table, packages_amount):
                 testing_list.append(False)
     return testing_list
 
-
-def load_packages(packages, address_list=address_list, distance_table_list=distance_table_list):
+"""
+Loads packages onto trucks based on special instructions, deadlines, and addresses.
+"""
+def load_packages(packages, address_list, distance_table_list):
     truck_capacity = 16
     departure_time1 = 0
     departure_time2 = 0
@@ -149,10 +157,10 @@ def load_packages(packages, address_list=address_list, distance_table_list=dista
     follow = []
     hub_packages = []
     """This is in order to have all package id's in the 'hub' array"""
-    for i in range(1, packages.packages_count):
-        hub_packages.append(i)
+    for i in range(1, packages.packages_count + 1):
+        hub_packages.append(int(i))
     """I want it to go through every package in the package list"""
-    for i in range(1, packages.packages_count):
+    for i in range(1, packages.packages_count + 1):
         package = packages.search(i)
         if package.special_notes_exists:
             special_instructions_array.append(package)
@@ -172,7 +180,7 @@ def load_packages(packages, address_list=address_list, distance_table_list=dista
                     truck_for_loading = trucks[truck_number - 1]
                     truck_for_loading.load_package(package)
                     truck_for_loading.address_id_array.append(package.address_id)
-
+                """This module is for the packages that are to be on the same delivery truck as others"""
             elif package.special_notes[0] == 'w':
                 intermediate_string = ''
                 for ii in package.special_notes[1:]:
@@ -196,19 +204,18 @@ def load_packages(packages, address_list=address_list, distance_table_list=dista
             elif package.special_notes[0] == 'i':
                 truck3.load_package(package)
                 hub_packages.remove(int(package.pid))
-                truck3.address_id_array.append(package.pid)
+                truck3.address_id_array.append(package.address_id)
             elif package.special_notes[0] == 'd':
                 truck2.load_package(package)
                 hub_packages.remove(int(package.pid))
-                truck2.address_id_array.append(package.pid)
+                truck2.address_id_array.append(package.address_id)
             else:
                 print('Invalid input in special instructions field')
         elif package.delivery_deadline != 'EOD':
-            if list_search(hub_packages, package.pid):
-                print('TAKING CARE OF'+str(package.pid))
+            if list_search(hub_packages, package.pid) is not None:
                 truck1.load_package(package)
                 hub_packages.remove(int(package.pid))
-                truck1.address_id_array.append(package.pid)
+                truck1.address_id_array.append(package.address_id)
             deadline_array.append(package)
         else:
             no_action_array.append(package)
@@ -217,37 +224,51 @@ def load_packages(packages, address_list=address_list, distance_table_list=dista
     that are going to the same address"""
     for i in hub_packages:
         package = packages.search(i)
-        if list_search(truck1.address_id_array, package.address_id):
-            hub_packages.remove(package.pid)
-            truck1.load_package(package)
-        if list_search(truck2.address_id_array, package.address_id):
-            hub_packages.remove(package.pid)
+        if list_search(truck1.address_id_array, package.address_id) is not None:
+            if len(truck1.packages_on) < 16:
+                hub_packages.remove(int(package.pid))
+                truck1.load_package(package)
+            else:
+                hub_packages.remove(package.pid)
+                truck3.load_package(package)
+                truck3.address_id_array.append(package.address_id)
+        if list_search(truck2.address_id_array, package.address_id) is not None:
             truck2.load_package(package)
-        if list_search(truck3.address_id_array, package.address_id):
-            hub_packages.remove(package.pid)
-            truck3.load_package(package)
+            hub_packages.remove(int(package.pid))
+
+        if list_search(truck3.address_id_array, package.address_id) is not None:
+            if list_search(hub_packages, package.pid):
+                hub_packages.remove(package.pid)
+                truck3.load_package(package)
+
+    for i in hub_packages:
+        package = packages.search(i)
+        truck3.load_package(package)
+
+    print(hub_packages)
 
     """This is the consoling module in order to 
     see if data is moving as expected"""
-    print('truck1',len(truck1.packages_on))
+    print('truck1', len(truck1.packages_on))
     for i in truck1.packages_on:
         print(i)
-    print(truck1.address_id_array)
-    print('truck2',len(truck2.packages_on))
+    print('truck2', len(truck2.packages_on))
     for i in truck2.packages_on:
         print(i)
-    print(truck2.address_id_array)
-    print('truck3',len(truck3.packages_on))
+    print('truck3', len(truck3.packages_on))
     for i in truck3.packages_on:
         print(i)
-    print(truck3.address_id_array)
     print(hub_packages)
-    for i in deadline_array:
-        print(i)
 
+# Initialize the package table
+init_package_table = hash_table.ChainingHashTable()
+load_package('supporting_documentation/packageFile.csv', init_package_table)
+
+# Load distance data
+address_list, distance_table_list = load_distances('supporting_documentation/WGUPS_distance_table.csv')
 address_id_filler(address_list, init_package_table, init_package_table.packages_count)
-load_packages(init_package_table)
+load_packages(init_package_table, address_list, init_package_table)
 
-# This while statement serves mostly for the console application
+# Console application loop
 while True:
     break
