@@ -14,6 +14,8 @@ import package
 import csv
 import truck
 import math
+import list_search as ls
+import datetime
 
 """
 This will be where I initialize the csvs and objects in order for the algo to begin
@@ -70,21 +72,9 @@ def load_distances(filename):
 """This will take a list and a term and return the index of the list that
 the term is found"""
 
-
-def list_search(arr, term):
-    for i in range(len(arr)):
-        if arr[i] == term:
-            return i
-    return None
-
-
 """
 Calculates the distance between two addresses using the distance_table.
 """
-
-
-
-
 
 """
 Fills the address_id field in the package_table based on address_list.
@@ -112,12 +102,12 @@ Loads packages onto trucks based on special instructions, deadlines, and address
 
 def load_packages(packages, address_list, distance_table_list):
     truck_capacity = 16
-    departure_time1 = 0
+    departure_time1 = 8
     departure_time2 = 0
     departure_time3 = 0
-    truck1 = truck.DeliveryTruck(1, departure_time1)
-    truck2 = truck.DeliveryTruck(2, departure_time2)
-    truck3 = truck.DeliveryTruck(3, departure_time3)
+    truck1 = truck.DeliveryTruck(1, departure_time1, address_list, distance_table_list)
+    truck2 = truck.DeliveryTruck(2, departure_time2, address_list, distance_table_list)
+    truck3 = truck.DeliveryTruck(3, departure_time3, address_list, distance_table_list)
     trucks = [truck1, truck2, truck3]
     special_instructions_array = []
     deadline_array = []
@@ -142,7 +132,7 @@ def load_packages(packages, address_list, distance_table_list):
             if package.special_notes[0] == 't':
                 """This is ensuring that the package is still 
                 in the hub to avoid double loading"""
-                if list_search(hub_packages, package.pid):
+                if ls.list_search(hub_packages, package.pid):
                     hub_packages.remove(package.pid)
                     truck_number = int(package.special_notes[1])
                     truck_for_loading = trucks[truck_number - 1]
@@ -159,12 +149,12 @@ def load_packages(packages, address_list, distance_table_list):
                         intermediate_string = ''
                     else:
                         intermediate_string = intermediate_string + str(ii)
-                if list_search(hub_packages, package.pid):
+                if ls.list_search(hub_packages, package.pid):
                     hub_packages.remove(package.pid)
                     truck1.load_package(package)
                     truck1.address_id_array.append(package.address_id)
                 for ii in follow:
-                    if list_search(hub_packages, int(ii)):
+                    if ls.list_search(hub_packages, int(ii)):
                         additional_package = packages.search(int(ii))
                         truck1.load_package(additional_package)
                         hub_packages.remove(int(ii))
@@ -180,7 +170,7 @@ def load_packages(packages, address_list, distance_table_list):
             else:
                 print('Invalid input in special instructions field')
         elif package.delivery_deadline != 'EOD':
-            if list_search(hub_packages, package.pid) is not None:
+            if ls.list_search(hub_packages, package.pid) is not None:
                 truck1.load_package(package)
                 hub_packages.remove(int(package.pid))
                 truck1.address_id_array.append(package.address_id)
@@ -192,7 +182,7 @@ def load_packages(packages, address_list, distance_table_list):
     that are going to the same address"""
     for i in hub_packages:
         package = packages.search(i)
-        if list_search(truck1.address_id_array, package.address_id) is not None:
+        if ls.list_search(truck1.address_id_array, package.address_id) is not None:
             if len(truck1.packages_on) < 16:
                 hub_packages.remove(int(package.pid))
                 truck1.load_package(package)
@@ -200,12 +190,12 @@ def load_packages(packages, address_list, distance_table_list):
                 hub_packages.remove(package.pid)
                 truck3.load_package(package)
                 truck3.address_id_array.append(package.address_id)
-        if list_search(truck2.address_id_array, package.address_id) is not None:
+        if ls.list_search(truck2.address_id_array, package.address_id) is not None:
             truck2.load_package(package)
             hub_packages.remove(int(package.pid))
 
-        if list_search(truck3.address_id_array, package.address_id) is not None:
-            if list_search(hub_packages, package.pid):
+        if ls.list_search(truck3.address_id_array, package.address_id) is not None:
+            if ls.list_search(hub_packages, package.pid):
                 hub_packages.remove(package.pid)
                 truck3.load_package(package)
 
@@ -213,10 +203,12 @@ def load_packages(packages, address_list, distance_table_list):
         package = packages.search(i)
         truck3.load_package(package)
 
-    """print(hub_packages)
 
+    """
     This is the consoling module in order to 
     see if data is moving as expected
+    """
+    """
     print('truck1', len(truck1.packages_on))
     for i in truck1.packages_on:
         print(i)
@@ -226,10 +218,13 @@ def load_packages(packages, address_list, distance_table_list):
     print('truck3', len(truck3.packages_on))
     for i in truck3.packages_on:
         print(i)
-    print(hub_packages)"""
+    """
     return trucks
 
+
 """This is going to input the 3 loaded trucks and output an ordered array of events"""
+
+
 def deliver_packages(trucks):
     event_array = []
 
@@ -240,14 +235,15 @@ def deliver_packages(trucks):
 init_package_table = hash_table.ChainingHashTable()
 load_package('supporting_documentation/packageFile.csv', init_package_table)
 
-
-
 # Load distance data
 address_list, distance_table_list = load_distances('supporting_documentation/WGUPS_distance_table.csv')
 address_id_filler(address_list, init_package_table, init_package_table.packages_count)
-trucks = load_packages(init_package_table, address_list, init_package_table)
+print()
+trucks = load_packages(init_package_table, address_list, distance_table_list)
 event_array = deliver_packages(trucks)
 
+truck1 = trucks[0]
+truck1.delivery_route()
 # Console application loop
 while True:
     break

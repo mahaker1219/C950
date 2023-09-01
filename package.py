@@ -66,7 +66,7 @@ class Package:
     def deliver(self, time):
         # need to add state change functionality here
         self.status = "Delivered"
-        self.delivery_time = datetime.datetime.strptime(time, '%H:%M:%S').time()
+        self.delivery_time = time
 
     def __str__(self):
         return ("%s, %s, Delivery Deadline: %s Weight: %s, %s, Hold: %s, Hold Time: %s, "
