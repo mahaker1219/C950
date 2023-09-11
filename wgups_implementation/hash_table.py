@@ -14,7 +14,6 @@ class ChainingHashTable:
         for i in range(initial_capacity):
             self.table.append([])
 
-
     # Inserts a new item into the hash table.
     ''' 
     #Original

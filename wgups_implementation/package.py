@@ -57,7 +57,7 @@ class Package:
 
     def load(self, truck):
         # need to add state change functionality here
-        self.status = "loaded on truck  " + str(truck)
+        self.status = "loaded on truck " + str(truck)
 
     def depart(self, truck):
         # need to add state change functionality here
@@ -72,5 +72,6 @@ class Package:
         return ("%s, %s, Delivery Deadline: %s Weight: %s, %s, Hold: %s, Hold Time: %s, "
                 "Status: %s, Delivery Time: %s Address ID: %s Special: %s" % (
                     self.pid, self.address, self.delivery_deadline, self.weight,
-                    self.special_notes, self.hold, self.hold_time, self.status, self.delivery_time, self.address_id, self.special_notes_exists
+                    self.special_notes, self.hold, self.hold_time, self.status, self.delivery_time, self.address_id,
+                    self.special_notes_exists
                 ))
