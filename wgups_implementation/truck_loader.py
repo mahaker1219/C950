@@ -5,8 +5,8 @@ from wgups_implementation.list_search import list_search
 def load_packages_to_truck(packages, address_list, distance_table_list):
     truck_capacity = 16
     departure_time1 = 8
-    departure_time2 = 0
-    departure_time3 = 0
+    departure_time2 = 11
+    departure_time3 = 11
     truck1 = DeliveryTruck(1, departure_time1, address_list, distance_table_list)
     truck2 = DeliveryTruck(2, departure_time2, address_list, distance_table_list)
     truck3 = DeliveryTruck(3, departure_time3, address_list, distance_table_list)
@@ -105,19 +105,4 @@ def load_packages_to_truck(packages, address_list, distance_table_list):
         package = packages.search(i)
         truck3.load_package(package)
 
-    """
-    This is the consoling module in order to 
-    see if data is moving as expected
-    """
-    """
-    print('truck1', len(truck1.packages_on))
-    for i in truck1.packages_on:
-        print(i)
-    print('truck2', len(truck2.packages_on))
-    for i in truck2.packages_on:
-        print(i)
-    print('truck3', len(truck3.packages_on))
-    for i in truck3.packages_on:
-        print(i)
-    """
     return trucks

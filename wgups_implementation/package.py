@@ -1,6 +1,6 @@
 """Serves as the class for every individual package"""
 import datetime
-
+from wgups_implementation.list_search import list_search
 
 class Package:
     # Constructor to pull all needed values from csv
@@ -63,15 +63,16 @@ class Package:
         # need to add state change functionality here
         self.status = "en route on truck  " + str(truck)
 
-    def deliver(self, time):
+    def deliver(self, time, truck):
         # need to add state change functionality here
-        self.status = "Delivered"
+        self.status = "Delivered by Truck "+str(truck)
         self.delivery_time = time
 
+    def fill_address_id(self, address_list):
+        self.address_id = list_search(address_list, self.address)
+
     def __str__(self):
-        return ("%s, %s, Delivery Deadline: %s Weight: %s, %s, Hold: %s, Hold Time: %s, "
-                "Status: %s, Delivery Time: %s Address ID: %s Special: %s" % (
-                    self.pid, self.address, self.delivery_deadline, self.weight,
-                    self.special_notes, self.hold, self.hold_time, self.status, self.delivery_time, self.address_id,
-                    self.special_notes_exists
+        return ("%s, %s, Delivery Deadline: %s, Special Notes: %s, Status: %s, Delivery Time: %s " % (
+                    self.pid, self.address, self.delivery_deadline,
+                    self.special_notes, self.status, self.delivery_time.strftime("%H:%M:%S")
                 ))

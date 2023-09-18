@@ -5,6 +5,7 @@ from wgups_implementation.hash_table import ChainingHashTable
 
 def load_packages(filename):
     hash_t = ChainingHashTable()
+    initial_state = []
     with open(filename) as package_list:
         package_data = csv.reader(package_list, delimiter=',')
         next(package_data)
@@ -22,10 +23,12 @@ def load_packages(filename):
                 special_notes = ''
 
             package_object = Package(pid, address, city, state, zip_code, delivery_deadline, weight,
-                                             special_notes)
-
+                                     special_notes)
+            package_object_init = Package(pid, address, city, state, zip_code, delivery_deadline, weight,
+                                     special_notes)
+            initial_state.append(package_object_init)
             hash_t.insert(pid, package_object)
-    return hash_t
+    return hash_t, initial_state
 
 
 """
@@ -50,3 +53,4 @@ def load_distances(filename):
                 distance_table_list.append(a[1:])
                 counter += 1
     return address_list, distance_table_list
+

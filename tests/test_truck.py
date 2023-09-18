@@ -1,6 +1,7 @@
 import pytest
 from wgups_implementation.truck import DeliveryTruck
 from wgups_implementation.data_loader import load_packages, load_distances
+from wgups_implementation.list_search import list_search
 
 
 @pytest.fixture
@@ -73,17 +74,70 @@ class TestDeliveryTruck:
             truck.deliver_package(unavailable_package)
         assert unavailable_package not in truck.packages_delivered
 
-    def test_distance_between(self, initialization):
+    def test_fill_address_id_onboard(self, initialization, loaded_truck):
+        address_list = initialization[1]
+        loaded_truck = loaded_truck
+        loaded_truck.fill_address_id_onboard()
+        for package in loaded_truck.packages_on:
+            assert package.address_id is not None
+            package_address_id = list_search(address_list, package.address)
+            assert package_address_id == package.address_id
+
+    def test_distance_between(self, initialization, loaded_truck):
         """Ensure the distance between two points is calculated correctly"""
-        package_list, address_list, distance_table, truck = initialization
-        print(3)
+        loaded_truck = loaded_truck
+        # Ensures return value for testing cases
+        testing_combinations = [[1, 5], [8, 6], [3, 7], [0, 8], [5, 4]]
+        for i in range(len(testing_combinations)):
+            line = testing_combinations[i]
+            p1 = loaded_truck.packages_on[line[0]]
+            p2 = loaded_truck.packages_on[line[1]]
+            distance_between = loaded_truck.distance_between(p1, package2=p2)
+            assert distance_between is not None
+
+        # Ensures table lookup is acting as expected
+        assert loaded_truck.distance_between(loaded_truck.packages_on[0], loaded_truck.packages_on[1]) == 1.5
+
+        # Ensures address id lookup operates correctly
+        assert loaded_truck.distance_between(loaded_truck.packages_on[0], starter_index=2) == 2.8
+
+        # Ensures properly handles invalid input
+        invalid_package = 7
+        with pytest.raises(TypeError):
+            loaded_truck.distance_between(invalid_package, package2=loaded_truck.packages_on[8])
+
+    def test_min_distance_from(self, initialization, loaded_truck):
+        """Ensure the minimum distance from a point to a list of points is calculated correctly"""
+        truck = loaded_truck
+        address_list = initialization[1]
+
+        # Ensures properly handles invalid input
+        invalid_package_list = 85
+        invalid_package_list2 = [5,6,7]
+        invalid_address_list = 54
+        invalid_address_list2 = [6,7,8]
+        invalid_address = 'Not a legitimate address'
+        invalid_address2 = 31
+        with pytest.raises(TypeError):
+            truck.min_distance_from(truck.current_location_id,invalid_package_list, address_list)
+        with pytest.raises(TypeError):
+            truck.min_distance_from(truck.current_location_id, invalid_package_list2, address_list)
+        with pytest.raises(TypeError):
+            truck.min_distance_from(truck.current_location_id, truck.packages_on, invalid_address_list)
+        with pytest.raises(TypeError):
+            truck.min_distance_from(truck.current_location_id, truck.packages_on, invalid_address_list2)
+        with pytest.raises(TypeError):
+            truck.min_distance_from(invalid_address, truck.packages_on, address_list)
+        with pytest.raises(ValueError):
+            truck.min_distance_from(invalid_address2, truck.packages_on, address_list)
+
+        # Function should return the package that is the closest then the length in miles it is away
+        assert truck.min_distance_from(truck.current_location_id,truck.packages_on,address_list)[0] == truck.packages_on[1]
+        assert truck.min_distance_from(truck.current_location_id,truck.packages_on,address_list)[1] == 2.8
+
+
 
     '''
-    def test_min_distance_from(self):
-        """Ensure the minimum distance from a point to a list of points is calculated correctly"""
-        # Your test code for calculating the minimum distance goes here
-        print(4)
-
     def test_delivery_route(self):
         """Ensure the delivery route is generated correctly"""
         # Your test code for generating a delivery route goes here

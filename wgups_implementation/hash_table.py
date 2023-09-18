@@ -99,3 +99,11 @@ class ChainingHashTable:
             # print(key_value)
             if kv[0] == key:
                 bucket_list.remove([kv[0], kv[1]])
+
+    def get_all_keys(self):
+        all_keys = set()
+        for bucket_list in self.table:
+            for kv_pair in bucket_list:
+                key = kv_pair[0]
+                all_keys.add(key)
+        return list(all_keys)
