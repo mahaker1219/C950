@@ -4,6 +4,7 @@ from wgups_implementation.package import Package
 
 
 class DeliveryTruck:
+    """All the main functionality happens here. Created to output an event array to use for state based rendering"""
     def __init__(self, truck_label, departure_time, address_list, distance_table):
         self.truck_label = truck_label
         self.packages_on = []

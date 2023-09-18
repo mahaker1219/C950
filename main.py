@@ -1,3 +1,4 @@
+# Marshall Haker WGU Student ID: 003935083
 from wgups_implementation.data_loader import load_packages, load_distances
 from wgups_implementation.truck_loader import load_packages_to_truck
 from wgups_implementation.merge import merge_three
@@ -19,23 +20,18 @@ def address_id_filler(input_address_list, package_table, packages_amount):
 
 
 # Initialize the package table
-
 package_table, initial_state = load_packages('supporting_documentation/packageFile.csv')
-
 # Load distance data
 address_list, distance_table_list = load_distances('supporting_documentation/WGUPS_distance_table.csv')
 address_id_filler(address_list, package_table, package_table.packages_count)
 trucks = load_packages_to_truck(package_table, address_list, distance_table_list)
 
 total_mileage = 0
-
 trucks_event_log = []
 for i in trucks:
     trucks_event_log.append(i.delivery_route())
     total_mileage += i.mileage_traveled
-
 total_event_log = merge_three(trucks_event_log[0], trucks_event_log[1], trucks_event_log[2])
-
 p_tracker = PackageTracker(total_event_log, initial_state)
 # Console application loop
 welcome_message = ("Welcome to WGUPS Implementation\n1. See Total Mileage\n2. See Final Package Status\n3. See All "

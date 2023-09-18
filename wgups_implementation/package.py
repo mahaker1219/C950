@@ -50,21 +50,17 @@ class Package:
         derive_special_notes()
 
     def update_address(self, new_address):
-        # need to add state change functionality here
         if self.special_notes != '':
             if self.special_notes[0] == 'i':
                 self.address = new_address
 
     def load(self, truck):
-        # need to add state change functionality here
         self.status = "loaded on truck " + str(truck)
 
     def depart(self, truck):
-        # need to add state change functionality here
         self.status = "en route on truck  " + str(truck)
 
     def deliver(self, time, truck):
-        # need to add state change functionality here
         self.status = "Delivered by Truck "+str(truck)
         self.delivery_time = time
 

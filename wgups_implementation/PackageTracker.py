@@ -6,6 +6,7 @@ from wgups_implementation.package import Package
 
 
 class PackageTracker:
+    """This is created for state tracking, so it's easy for user console to calculate based off times"""
     def __init__(self, event_log, packages):
         self.event_log = event_log
         self.state = packages
@@ -22,6 +23,8 @@ class PackageTracker:
         return r_string
 
     def new_package_state(self, package_id):
+        """Seems redundant but if I reuse a pointer, it will go based off last change, which defeats the purpose of
+        state based rendering"""
         data = self.state[int(package_id) - 1]
         pid = data.pid
         address = data.address
@@ -36,10 +39,14 @@ class PackageTracker:
 
     @staticmethod
     def input_time_conversion(input_time):
+        """Makes it easier to compare datetime objs by converting user input"""
         hours, minutes = map(int, input_time.split(':'))
         return time(hours, minutes)
 
     def retrieve_state_time_package(self, input_time, package):
+        """It may be easier to just use the already baked in state functionality for this, but I'm looking to turn
+        this in ASAP, may tweak in future to use at part of my personal coding portfolio (link-based sharing only so
+        nobody can plagiarize)"""
         target_time = self.input_time_conversion(input_time)
         copy_package = self.new_package_state(int(package))
         for event in self.event_log:
@@ -57,6 +64,7 @@ class PackageTracker:
         return copy_package
 
     def retrieve_state_time_all(self, input_time):
+        """See all package status at a certain point"""
         target_time = self.input_time_conversion(input_time)
         created_states = self.state_storage.get_all_keys()
         print(created_states)

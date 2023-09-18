@@ -2,7 +2,12 @@ import csv
 from wgups_implementation.package import Package
 from wgups_implementation.hash_table import ChainingHashTable
 
-
+# Importing all packages from CSV
+# CSV import code inspired by web lecture
+# C950 - Webinar-2 - Getting Greedy, who moved my data?
+# W-2_ChainingHashTable_zyBooks_Key-Value_CSV_Greedy.py
+# Ref: zyBooks: Figure 7.8.2: Hash table using chaining.
+# Ref: zyBooks: 3.3.1: MakeChange greedy algorithm.
 def load_packages(filename):
     hash_t = ChainingHashTable()
     initial_state = []
@@ -30,12 +35,7 @@ def load_packages(filename):
             hash_t.insert(pid, package_object)
     return hash_t, initial_state
 
-
-"""
-Loads distance data from CSV and prepares the address and distance tables.
-"""
-
-
+# Importing distance data and addresses from the distance table csv
 def load_distances(filename):
     counter = 0
     distance_table_list = [

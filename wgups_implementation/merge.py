@@ -1,4 +1,5 @@
 def merge(list_a, list_b):
+    """Created for a sorted merge"""
     i, j = 0, 0
     m, n = len(list_a), len(list_b)
     output_list = []

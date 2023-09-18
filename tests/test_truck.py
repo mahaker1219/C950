@@ -4,6 +4,7 @@ from wgups_implementation.data_loader import load_packages, load_distances
 from wgups_implementation.list_search import list_search
 
 
+# This initialization will be used for multiple different tests to quickly use sample data
 @pytest.fixture
 def initialization():
     package_list = load_packages("../supporting_documentation/packageFile.csv")
@@ -113,13 +114,13 @@ class TestDeliveryTruck:
 
         # Ensures properly handles invalid input
         invalid_package_list = 85
-        invalid_package_list2 = [5,6,7]
+        invalid_package_list2 = [5, 6, 7]
         invalid_address_list = 54
-        invalid_address_list2 = [6,7,8]
+        invalid_address_list2 = [6, 7, 8]
         invalid_address = 'Not a legitimate address'
         invalid_address2 = 31
         with pytest.raises(TypeError):
-            truck.min_distance_from(truck.current_location_id,invalid_package_list, address_list)
+            truck.min_distance_from(truck.current_location_id, invalid_package_list, address_list)
         with pytest.raises(TypeError):
             truck.min_distance_from(truck.current_location_id, invalid_package_list2, address_list)
         with pytest.raises(TypeError):
@@ -132,14 +133,6 @@ class TestDeliveryTruck:
             truck.min_distance_from(invalid_address2, truck.packages_on, address_list)
 
         # Function should return the package that is the closest then the length in miles it is away
-        assert truck.min_distance_from(truck.current_location_id,truck.packages_on,address_list)[0] == truck.packages_on[1]
-        assert truck.min_distance_from(truck.current_location_id,truck.packages_on,address_list)[1] == 2.8
-
-
-
-    '''
-    def test_delivery_route(self):
-        """Ensure the delivery route is generated correctly"""
-        # Your test code for generating a delivery route goes here
-        print(5)
-'''
+        assert truck.min_distance_from(truck.current_location_id, truck.packages_on, address_list)[0] == \
+               truck.packages_on[1]
+        assert truck.min_distance_from(truck.current_location_id, truck.packages_on, address_list)[1] == 2.8
