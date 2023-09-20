@@ -36,7 +36,7 @@ p_tracker = PackageTracker(total_event_log, initial_state)
 # Console application loop
 welcome_message = ("Welcome to WGUPS Implementation\n1. See Total Mileage\n2. See Final Package Status\n3. See All "
                    "Package Status By Time\n4. See Single Package Status By Time\n5. See All Events\n6. List All "
-                   "States Cached Within PackageTracking Object\n7. Exit Program")
+                   "States Cached Within PackageTracking Object\n7. See Number Of Packages Per Truck\n8.Exit Program")
 
 while True:
     print(welcome_message)
@@ -58,6 +58,10 @@ while True:
     elif user_input == '6':
         print(p_tracker.list_states_cached())
     elif user_input == '7':
+        print('Number of packages on truck 1: ' + str(len(trucks[0].packages_delivered)))
+        print('Number of packages on truck 2: ' + str(len(trucks[1].packages_delivered)))
+        print('Number of packages on truck 3: ' + str(len(trucks[2].packages_delivered)))
+    elif user_input == '8':
         print("Thank you for your time!")
         break
     else:

@@ -13,13 +13,16 @@ class DeliveryTruck:
         self.current_location_id = 0
         self.destination = ''
         self.distance_to_destination = 0
-        self.departure_time = dt.datetime(1, 1, 1, departure_time)
-        self.current_time = dt.datetime(1, 1, 1, departure_time)
+        self.departure_time = dt.datetime.strptime(departure_time,'%H:%M')
+        self.current_time = dt.datetime.strptime(departure_time,'%H:%M')
         self.address_id_array = []
         self.event_array = []
         self.address_list = address_list
         self.distance_table = distance_table
         self.mileage_traveled = 0
+        self.delivery_deadline = []
+
+
 
     def load_package(self, p):
         """This function will load a package 'p' onto truck, and update required fields for package and truck"""
@@ -45,6 +48,8 @@ class DeliveryTruck:
         p.deliver(self.current_time, self.truck_label)
         self.packages_delivered.append(p)
         self.packages_on.remove(p)
+        if p in self.delivery_deadline:
+            self.delivery_deadline.remove(p)
 
     def fill_address_id_onboard(self):
         for package in self.packages_on:
@@ -122,10 +127,17 @@ class DeliveryTruck:
             package.depart(self.truck_label)
             self.log_event("Package %s departed on truck %s" % (package.pid, self.truck_label),
                            package.pid, 'Depart')
+            if package.delivery_deadline != 'EOD':
+                self.delivery_deadline.append(package)
         while len(self.packages_on) > 0:
-            destination_package, distance_to_package = self.min_distance_from(self.current_location_id,
-                                                                              self.packages_on,
+            if len(self.delivery_deadline)>0:
+                destination_package, distance_to_package = self.min_distance_from(self.current_location_id,
+                                                                              self.delivery_deadline,
                                                                               self.address_list)
+            else:
+                destination_package, distance_to_package = self.min_distance_from(self.current_location_id,
+                                                                                  self.packages_on,
+                                                                                  self.address_list)
             # This part will update the time
             self.mileage_traveled += distance_to_package
             travel_time = self.distance_to_time(distance_to_package)

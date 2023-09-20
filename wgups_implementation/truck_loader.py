@@ -4,9 +4,9 @@ from wgups_implementation.list_search import list_search
 
 def load_packages_to_truck(packages, address_list, distance_table_list):
     truck_capacity = 16
-    departure_time1 = 8
-    departure_time2 = 11
-    departure_time3 = 11
+    departure_time1 = '8:00'
+    departure_time2 = '9:10'
+    departure_time3 = '11:00'
     truck1 = DeliveryTruck(1, departure_time1, address_list, distance_table_list)
     truck2 = DeliveryTruck(2, departure_time2, address_list, distance_table_list)
     truck3 = DeliveryTruck(3, departure_time3, address_list, distance_table_list)
