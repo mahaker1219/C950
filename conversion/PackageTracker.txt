@@ -1,0 +1,223 @@
+# I know the initial state being a completely separate list seems redundant, but I am doing this IN order to prevent
+
+# generating the event array doesn't interfere with the user console
+
+from datetime IMPORT time
+
+from wgups_implementation.hash_table IMPORT ChainingHashTable
+
+from wgups_implementation.package IMPORT Package
+
+
+
+
+
+DEFINE CLASS PackageTracker:
+
+    """This is created FOR state tracking, so it's easy FOR user console to calculate based off times"""
+
+    DEFINE FUNCTION __init__(self, event_log, packages):
+
+        SET self.event_log TO event_log
+
+        SET self.state TO packages
+
+        SET self.state_storage TO ChainingHashTable()
+
+        SET self.packages_count TO len(self.state)
+
+
+
+    DEFINE FUNCTION list_states_cached(self):
+
+        RETURN self.state_storage.get_all_keys()
+
+
+
+    DEFINE FUNCTION __str__(self):
+
+        SET r_string TO "Package Tracker"
+
+        FOR i IN self.state:
+
+            r_string += "\n" + str(i)
+
+        RETURN r_string
+
+
+
+    DEFINE FUNCTION new_package_state(self, package_id):
+
+        """Seems redundant but IF I reuse a pointer, it will go based off last change, which defeats the purpose of
+
+        state based rendering"""
+
+        SET data TO self.state[int(package_id) - 1]
+
+        SET pid TO data.pid
+
+        SET address TO data.address
+
+        SET city TO data.city
+
+        SET state TO data.state
+
+        SET zip_code TO data.zip_code
+
+        SET delivery_deadline TO data.delivery_deadline
+
+        SET weight TO data.weight
+
+        SET special_notes TO data.special_notes
+
+        RETURN Package(pid, address, city, state, zip_code, delivery_deadline, weight,
+
+                       special_notes)
+
+
+
+    @staticmethod
+
+    DEFINE FUNCTION INPUT_time_conversion(INPUT_time):
+
+        """Makes it easier to compare datetime objs by converting user INPUT"""
+
+        SET hours, minutes TO map(int, INPUT_time.split(':'))
+
+        RETURN time(hours, minutes)
+
+
+
+    DEFINE FUNCTION retrieve_state_time_package(self, INPUT_time, package):
+
+        """It may be easier to just use the already baked IN state functionality FOR this, but I'm looking to turn
+
+        this IN ASAP, may tweak IN future to use at part of my personal coding portfolio (link-based sharing only so
+
+        nobody can plagiarize)"""
+
+        SET target_time TO self.INPUT_time_conversion(INPUT_time)
+
+        SET copy_package TO self.new_package_state(int(package))
+
+        FOR event IN self.event_log:
+
+            SET event_time TO event[1]
+
+            IF event_time <= target_time and package EQUALS event[2]:
+
+                IF event[3] EQUALS 'Load':
+
+                    copy_package.load(event[-1])
+
+                    OUTPUT('load')
+
+                IF event[3] EQUALS 'Depart':
+
+                    copy_package.depart(event[-1])
+
+                    OUTPUT('depart')
+
+                IF event[3] EQUALS 'Deliver':
+
+                    copy_package.deliver(event[1], event[-1])
+
+                    OUTPUT('deliver')
+
+        RETURN copy_package
+
+
+
+    DEFINE FUNCTION retrieve_state_time_all(self, INPUT_time):
+
+        """See all package status at a certain point"""
+
+        SET target_time TO self.INPUT_time_conversion(INPUT_time)
+
+        SET created_states TO self.state_storage.get_all_keys()
+
+        OUTPUT(created_states)
+
+        # This is all to check IF the state has already been calculated or pull from the most recent state before the
+
+        # INPUT time
+
+
+
+        IF len(created_states) >= 1:
+
+            SET starting_state_time TO self.event_log[0][1]
+
+            FOR i IN range(len(created_states)):
+
+                # Within the list, looking to find the state with the closest time to target time
+
+                IF created_states[i] EQUALS target_time:
+
+                    SET starting_state_time TO created_states[i]
+
+                    SET starting_state TO self.state_storage.search(starting_state_time)
+
+                ELSEIF target_time > created_states[i] > starting_state_time:
+
+                    SET starting_state_time TO created_states[i]
+
+                    SET starting_state TO self.state_storage.search(starting_state_time)
+
+                ELSE:
+
+                    SET starting_state TO []
+
+                    SET starting_state_time TO self.event_log[0][1]
+
+                    FOR pid IN range(1, self.packages_count + 1):
+
+                        starting_state.append(self.new_package_state(pid))
+
+        ELSE:
+
+            SET starting_state TO []
+
+            SET starting_state_time TO self.event_log[0][1]
+
+            FOR pid IN range(1, self.packages_count + 1):
+
+                starting_state.append(self.new_package_state(pid))
+
+
+
+        # this will generate time-based states
+
+        FOR event IN self.event_log:
+
+            IF target_time > event[1] >= starting_state_time:
+
+
+
+                # This length check is IN place IN order to account FOR events that are not package specific
+
+                IF event[2] is not None:
+
+                    SET iter_p TO starting_state[event[2] - 1]
+
+                    IF event[3] EQUALS 'Load':
+
+                        iter_p.load(event[-1])
+
+                    IF event[3] EQUALS 'Depart':
+
+                        iter_p.depart(event[-1])
+
+                    IF event[3] EQUALS 'Deliver':
+
+                        iter_p.deliver(event[1], event[-1])
+
+        self.state_storage.insert(target_time, starting_state)
+
+        SET r_string TO "Package Tracker"
+
+        FOR i IN starting_state:
+
+            r_string += "\n" + str(i)
+
+        RETURN r_string

@@ -1,0 +1,135 @@
+# Marshall Haker WGU Student ID: 003935083
+
+from wgups_implementation.data_loader IMPORT load_packages, load_distances
+
+from wgups_implementation.truck_loader IMPORT load_packages_to_truck
+
+from wgups_implementation.merge IMPORT merge_three
+
+from wgups_implementation.PackageTracker IMPORT PackageTracker
+
+
+
+
+
+DEFINE FUNCTION address_id_filler(INPUT_address_list, package_table, packages_amount):
+
+    SET testing_list TO []
+
+    FOR i IN range(1, packages_amount + 1):
+
+        SET p TO package_table.search(i)
+
+        FOR n IN range(len(INPUT_address_list)):
+
+            IF p.address EQUALS INPUT_address_list[n]:
+
+                testing_list.append(True)
+
+                SET p.address_id TO n
+
+                break
+
+            ELSE:
+
+                testing_list.append(False)
+
+    RETURN testing_list
+
+
+
+
+
+# Initialize the package table
+
+SET package_table, initial_state TO load_packages('supporting_documentation/packageFile.csv')
+
+# Load distance data
+
+SET address_list, distance_table_list TO load_distances('supporting_documentation/WGUPS_distance_table.csv')
+
+address_id_filler(address_list, package_table, package_table.packages_count)
+
+SET trucks TO load_packages_to_truck(package_table, address_list, distance_table_list)
+
+
+
+SET total_mileage TO 0
+
+SET trucks_event_log TO []
+
+FOR i IN trucks:
+
+    trucks_event_log.append(i.delivery_route())
+
+    total_mileage += i.mileage_traveled
+
+SET total_event_log TO merge_three(trucks_event_log[0], trucks_event_log[1], trucks_event_log[2])
+
+SET p_tracker TO PackageTracker(total_event_log, initial_state)
+
+# Console application loop
+
+SET welcome_message TO ("Welcome to WGUPS Implementation\n1. See Total Mileage\n2. See Final Package Status\n3. See All "
+
+                   "Package Status By Time\n4. See Single Package Status By Time\n5. See All Events\n6. List All "
+
+                   "States Cached Within PackageTracking Object\n7. See Number Of Packages Per Truck\n8. Exit Program")
+
+
+
+WHILE True:
+
+    OUTPUT(welcome_message)
+
+    SET user_INPUT TO INPUT("Select option by number: ")
+
+    IF user_INPUT EQUALS '1':
+
+        OUTPUT("Total mileage FOR all trucks is " + str(total_mileage))
+
+    ELSEIF user_INPUT EQUALS '2':
+
+        OUTPUT(p_tracker.retrieve_state_time_all('23:00'))
+
+    ELSEIF user_INPUT EQUALS '3':
+
+        SET user_time TO INPUT("Please type IN time IN following format HH:MM: ")
+
+        OUTPUT(p_tracker.retrieve_state_time_all(user_time))
+
+    ELSEIF user_INPUT EQUALS '4':
+
+        SET user_time TO INPUT("Please type IN time IN following format HH:MM: ")
+
+        SET user_package TO INPUT("Please type IN package by id number: ")
+
+        OUTPUT(p_tracker.retrieve_state_time_package(user_time, user_package))
+
+    ELSEIF user_INPUT EQUALS '5':
+
+        FOR event IN total_event_log:
+
+            OUTPUT(event[0])
+
+    ELSEIF user_INPUT EQUALS '6':
+
+        OUTPUT(p_tracker.list_states_cached())
+
+    ELSEIF user_INPUT EQUALS '7':
+
+        OUTPUT('Number of packages on truck 1: ' + str(len(trucks[0].packages_delivered)))
+
+        OUTPUT('Number of packages on truck 2: ' + str(len(trucks[1].packages_delivered)))
+
+        OUTPUT('Number of packages on truck 3: ' + str(len(trucks[2].packages_delivered)))
+
+    ELSEIF user_INPUT EQUALS '8':
+
+        OUTPUT("Thank you FOR your time!")
+
+        break
+
+    ELSE:
+
+        OUTPUT('Invalid INPUT detected')

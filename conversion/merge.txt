@@ -1,0 +1,55 @@
+DEFINE FUNCTION merge(list_a, list_b):
+
+    """Created FOR a sorted merge"""
+
+    SET i, j TO 0, 0
+
+    SET m, n TO len(list_a), len(list_b)
+
+    SET output_list TO []
+
+
+
+    WHILE i < m and j < n:
+
+        IF list_a[i][1] <= list_b[j][1]:  # Compare timestamps (second element IN each sublist)
+
+            output_list.append(list_a[i])
+
+            i += 1
+
+        ELSE:
+
+            output_list.append(list_b[j])
+
+            j += 1
+
+
+
+    WHILE i < m:
+
+        output_list.append(list_a[i])
+
+        i += 1
+
+
+
+    WHILE j < n:
+
+        output_list.append(list_b[j])
+
+        j += 1
+
+
+
+    RETURN output_list
+
+
+
+
+
+DEFINE FUNCTION merge_three(list_a, list_b, list_c):
+
+    SET output_list TO merge(list_a, list_b)
+
+    RETURN merge(output_list, list_c)

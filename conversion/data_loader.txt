@@ -1,0 +1,53 @@
+IMPORT csv
+from wgups_implementation.package IMPORT Package
+from wgups_implementation.hash_table IMPORT ChainingHashTable
+# Importing all packages from CSV
+# CSV IMPORT code inspired by web lecture
+# C950 - Webinar-2 - Getting Greedy, who moved my data?
+# W-2_ChainingHashTable_zyBooks_Key-Value_CSV_Greedy.py
+# Ref: zyBooks: Figure 7.8.2: Hash table using chaining.
+# Ref: zyBooks: 3.3.1: MakeChange greedy algorithm.
+DEFINE FUNCTION load_packages(filename):
+    SET hash_t TO ChainingHashTable()
+    SET initial_state TO []
+    with open(filename) as package_list:
+        SET package_data TO csv.reader(package_list, delimiter=',')
+        next(package_data)
+        FOR p IN package_data:
+            SET pid TO int(p[0])
+            SET address TO p[1]
+            SET city TO p[2]
+            SET state TO p[3]
+            SET zip_code TO p[4]
+            SET delivery_deadline TO p[5]
+            SET weight TO int(p[6])
+            IF p[7]:
+                SET special_notes TO p[7]
+            ELSE:
+                SET special_notes TO ''
+            SET package_object TO Package(pid, address, city, state, zip_code, delivery_deadline, weight,
+
+                                     special_notes)
+            SET package_object_init TO Package(pid, address, city, state, zip_code, delivery_deadline, weight,
+                                     special_notes)
+            initial_state.append(package_object_init)
+            hash_t.insert(pid, package_object)
+    RETURN hash_t, initial_state
+# Importing distance data and addresses from the distance table csv
+DEFINE FUNCTION load_distances(filename):
+    SET counter TO 0
+    SET distance_table_list TO [
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ]]
+    with open(filename) as distances:
+        SET data TO csv.reader(distances, delimiter=',')
+        FOR a IN data:
+            IF counter EQUALS 0:
+                SET address_list TO a
+                address_list.pop(0)
+                FOR i IN range(len(address_list)):
+                    SET address_list[i] TO address_list[i][1:]
+                counter += 1
+            ELSE
+                distance_table_list.append(a[1:])
+                counter += 1
+    RETURN address_list, distance_table_list

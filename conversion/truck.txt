@@ -1,0 +1,325 @@
+""""""
+
+IMPORT datetime as dt
+
+from wgups_implementation.package IMPORT Package
+
+
+
+
+
+DEFINE CLASS DeliveryTruck:
+
+    """All the main functionality happens here. Created to output an event array to use FOR state based rendering"""
+
+    DEFINE FUNCTION __init__(self, truck_label, departure_time, address_list, distance_table):
+
+        SET self.truck_label TO truck_label
+
+        SET self.packages_on TO []
+
+        SET self.packages_delivered TO []
+
+        SET self.current_location TO '4001 South 700 East'
+
+        SET self.current_location_id TO 0
+
+        SET self.destination TO ''
+
+        SET self.distance_to_destination TO 0
+
+        SET self.departure_time TO dt.datetime.strptime(departure_time,'%H:%M')
+
+        SET self.current_time TO dt.datetime.strptime(departure_time,'%H:%M')
+
+        SET self.address_id_array TO []
+
+        SET self.event_array TO []
+
+        SET self.address_list TO address_list
+
+        SET self.distance_table TO distance_table
+
+        SET self.mileage_traveled TO 0
+
+        SET self.delivery_deadline TO []
+
+
+
+
+
+
+
+    DEFINE FUNCTION load_package(self, p):
+
+        """This function will load a package 'p' onto truck, and update required fields FOR package and truck"""
+
+        # Input check
+
+        IF p is None:
+
+            raise TypeError("Package cannot be None")
+
+        IF not isinstance(p, Package):
+
+            raise TypeError("Input must be instance of Package class")
+
+        # append packages_on
+
+        self.packages_on.append(p)
+
+        self.address_id_array.append(p.address_id)
+
+        self.log_event("Package %s loaded onto Truck %s" % (p.pid, self.truck_label), p.pid, 'Load')
+
+        p.load(self.truck_label)
+
+
+
+    DEFINE FUNCTION deliver_package(self, p):
+
+        # Input check
+
+        IF p is None:
+
+            raise TypeError("Package cannot be None")
+
+        IF not isinstance(p, Package):
+
+            raise TypeError("Input must be instance of Package class")
+
+        IF p not IN self.packages_on:
+
+            raise ValueError("Package is not available FOR delivery since it is not loaded to truck")
+
+        p.deliver(self.current_time, self.truck_label)
+
+        self.packages_delivered.append(p)
+
+        self.packages_on.remove(p)
+
+        IF p IN self.delivery_deadline:
+
+            self.delivery_deadline.remove(p)
+
+
+
+    DEFINE FUNCTION fill_address_id_onboard(self):
+
+        FOR package IN self.packages_on:
+
+            package.fill_address_id(self.address_list)
+
+
+
+    DEFINE FUNCTION distance_between(self, package1, package2=None, starter_index=None):
+
+        IF package2 is None:
+
+            SET packages TO [package1]
+
+        ELSE:
+
+            SET packages TO [package1, package2]
+
+
+
+        FOR i IN packages:
+
+            IF i is None:
+
+                raise TypeError("Package cannot be None")
+
+            IF not isinstance(i, Package):
+
+                raise TypeError("Input must be instance of Package class")
+
+            IF i not IN self.packages_on:
+
+                raise ValueError("Package is not available FOR delivery since it is not loaded to truck")
+
+
+
+        self.fill_address_id_onboard()
+
+
+
+        IF starter_index is not None:
+
+            SET p2 TO int(starter_index)
+
+        ELSE:
+
+            SET p2 TO int(package2.address_id)
+
+
+
+        IF str(self.distance_table[package1.address_id][p2]) != '':
+
+            RETURN float(self.distance_table[package1.address_id][p2])
+
+        ELSEIF str(self.distance_table[p2][package1.address_id]) != '':
+
+            RETURN float(self.distance_table[p2][package1.address_id])
+
+        ELSE:
+
+            RETURN None
+
+
+
+    """
+
+    Finds the index of the nearest package based on the current address.
+
+    """
+
+
+
+    DEFINE FUNCTION min_distance_from(self, address_currently_at, packages, address_list):
+
+        """Iterates through all available packages to find which one is closest"""
+
+        # Ensures proper INPUT types
+
+        IF type(address_currently_at) != int:
+
+            raise TypeError('address_currently_at must be an int representing the address_id')
+
+        IF type(packages) != list:
+
+            raise TypeError('packages must be a list of instances of the Package class')
+
+        IF type(address_list) != list:
+
+            raise TypeError('address_list must be a list of strings')
+
+        FOR i IN packages:
+
+            IF not isinstance(i, Package):
+
+                raise TypeError("Input must be instance of Package class")
+
+        FOR i IN address_list:
+
+            IF type(i) != str:
+
+                raise TypeError("address_list must only contain strings")
+
+        IF address_currently_at > len(address_list):
+
+            raise ValueError("Address currently at must be within address_list")
+
+
+
+        # Starts with maximum distance then iterates through all packages to find which has the min
+
+        SET min_distance TO 999
+
+        SET closest_package TO None
+
+        FOR package IN packages:
+
+            SET distance TO self.distance_between(package, starter_index=self.current_location_id)
+
+            IF distance < min_distance:
+
+                SET min_distance TO distance
+
+                SET closest_package TO package
+
+        RETURN closest_package, min_distance
+
+
+
+    @staticmethod
+
+    DEFINE FUNCTION distance_to_time(distance):
+
+        RETURN dt.timedelta(hours=distance / 18)
+
+
+
+    DEFINE FUNCTION log_event(self, event, package_id=None, action=None):
+
+        self.event_array.append([event, self.current_time.time(), package_id, action, self.truck_label])
+
+
+
+    DEFINE FUNCTION delivery_route(self):
+
+        FOR package IN self.packages_on:
+
+            package.depart(self.truck_label)
+
+            self.log_event("Package %s departed on truck %s" % (package.pid, self.truck_label),
+
+                           package.pid, 'Depart')
+
+            IF package.delivery_deadline != 'EOD':
+
+                self.delivery_deadline.append(package)
+
+        WHILE len(self.packages_on) > 0:
+
+            IF len(self.delivery_deadline)>0:
+
+                SET destination_package, distance_to_package TO self.min_distance_from(self.current_location_id,
+
+                                                                              self.delivery_deadline,
+
+                                                                              self.address_list)
+
+            ELSE:
+
+                SET destination_package, distance_to_package TO self.min_distance_from(self.current_location_id,
+
+                                                                                  self.packages_on,
+
+                                                                                  self.address_list)
+
+            # This part will update the time
+
+            self.mileage_traveled += distance_to_package
+
+            SET travel_time TO self.distance_to_time(distance_to_package)
+
+            SET self.current_time TO self.current_time + travel_time
+
+            self.deliver_package(destination_package)
+
+            self.log_event("Delivered Package %s to %s" % (destination_package.pid, destination_package.address),
+
+                           destination_package.pid, 'Deliver')
+
+            SET self.current_location_id TO destination_package.address_id
+
+            SET self.current_location TO destination_package.address
+
+            # Ensures packages of the same address will be delivered as well
+
+            FOR i IN self.packages_on:
+
+                IF i.address_id EQUALS self.current_location:
+
+                    self.deliver_package(i)
+
+                    self.log_event("Delivered Package %s to %s" % (i.pid, i.address), i.pid,
+
+                                   'Deliver')
+
+        SET trip_to_hub_distance TO float(self.distance_table[self.current_location_id][0])
+
+        self.mileage_traveled += trip_to_hub_distance
+
+        SET trip_to_hub_time TO self.distance_to_time(trip_to_hub_distance)
+
+        SET self.current_time TO self.current_time + trip_to_hub_time
+
+        SET self.current_location_id TO 0
+
+        SET self.current_location TO self.address_list[0]
+
+        self.log_event("Truck %s arrives back to hub" % self.truck_label)
+
+        RETURN self.event_array

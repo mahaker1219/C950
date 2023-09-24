@@ -1,0 +1,9 @@
+DEFINE FUNCTION list_search(arr, term):
+
+    FOR i IN range(len(arr)):
+
+        IF arr[i] EQUALS term:
+
+            RETURN i
+
+    RETURN None

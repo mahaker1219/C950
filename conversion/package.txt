@@ -1,0 +1,147 @@
+"""Serves as the DEFINE CLASS FOR every individual package"""
+
+IMPORT datetime
+
+from wgups_implementation.list_search IMPORT list_search
+
+
+
+DEFINE CLASS Package:
+
+    # Constructor to pull all needed values from csv
+
+    DEFINE FUNCTION __init__(self, pid, address, city, state, zip_code, delivery_deadline, weight, special_notes=''):
+
+        DEFINE FUNCTION derive_special_notes():
+
+            IF self.special_notes != '':
+
+                SET self.special_notes_exists TO True
+
+                SET spec TO str(self.special_notes)
+
+                IF spec[0] EQUALS 't':
+
+                    SET self.truck_preference TO spec[1]
+
+
+
+                ELSEIF spec[0] EQUALS 'w':
+
+                    SET output_array TO []
+
+                    SET active_number TO ""
+
+                    FOR i IN spec[1:]:
+
+                        IF i EQUALS ",":
+
+                            output_array.append(int(active_number))
+
+                            SET active_number TO ""
+
+                        ELSE:
+
+                            active_number += i
+
+                    SET self.follow TO output_array
+
+
+
+                ELSEIF spec[0] EQUALS 'i':
+
+                    SET self.hold TO True
+
+
+
+                ELSEIF spec[0] EQUALS 'd':
+
+                    SET self.hold TO True
+
+                    SET self.hold_time TO datetime.datetime.strptime(spec[1:], '%H:%M').time()
+
+            ELSE:
+
+                SET self.special_notes_exists TO False
+
+
+
+        SET self.pid TO pid
+
+        SET self.address TO address
+
+        SET self.city TO city
+
+        SET self.state TO state
+
+        SET self.zip_code TO zip_code
+
+        SET self.delivery_deadline TO delivery_deadline
+
+        SET self.weight TO weight
+
+        SET self.special_notes TO special_notes
+
+        SET self.hold TO False
+
+        SET self.hold_time TO datetime.time(0, 0, 0, )
+
+        SET self.status TO 'at the hub'
+
+        SET self.delivery_time TO datetime.time(0, 0, 0)
+
+        SET self.truck_preference TO 0
+
+        SET self.follow TO []
+
+        SET self.address_id TO None
+
+        derive_special_notes()
+
+
+
+    DEFINE FUNCTION update_address(self, new_address):
+
+        IF self.special_notes != '':
+
+            IF self.special_notes[0] EQUALS 'i':
+
+                SET self.address TO new_address
+
+
+
+    DEFINE FUNCTION load(self, truck):
+
+        SET self.status TO "loaded on truck " + str(truck)
+
+
+
+    DEFINE FUNCTION depart(self, truck):
+
+        SET self.status TO "en route on truck  " + str(truck)
+
+
+
+    DEFINE FUNCTION deliver(self, time, truck):
+
+        SET self.status TO "Delivered by Truck "+str(truck)
+
+        SET self.delivery_time TO time
+
+
+
+    DEFINE FUNCTION fill_address_id(self, address_list):
+
+        SET self.address_id TO list_search(address_list, self.address)
+
+
+
+    DEFINE FUNCTION __str__(self):
+
+        RETURN ("%s, %s, Delivery Deadline: %s, Special Notes: %s, Status: %s, Delivery Time: %s " % (
+
+                    self.pid, self.address, self.delivery_deadline,
+
+                    self.special_notes, self.status, self.delivery_time.strftime("%H:%M:%S")
+
+                ))

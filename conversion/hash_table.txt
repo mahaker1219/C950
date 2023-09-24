@@ -1,0 +1,56 @@
+# C950 - Webinar-1 - Let’s Go Hashing
+# W-1_ChainingHashTable_zyBooks_Key-Value.py
+# Ref: zyBooks: Figure 7.8.2: Hash table using chaining.
+# Modified FOR Key:Value
+# HashTable DEFINE CLASS using chaining.
+DEFINE CLASS ChainingHashTable:
+    # Constructor with optional initial capacity parameter.
+    # Assigns all buckets with an empty list.
+    DEFINE FUNCTION __init__(self, initial_capacity=10):
+        # initialize the hash table with empty bucket list entries.
+        SET self.table TO []
+        SET self.packages_count TO 0
+        FOR i IN range(initial_capacity):
+            self.table.append([])
+    DEFINE FUNCTION insert(self, key, item):  # does both insert and update
+        # get the bucket list where this item will go.
+        SET bucket TO hash(key) % len(self.table)
+        SET bucket_list TO self.table[bucket]
+        # update key IF it is already IN the bucket
+        FOR kv IN bucket_list:
+            # OUTPUT (key_value)
+            IF kv[0] EQUALS key:
+                SET kv[1] TO item
+                RETURN True
+        # IF not, insert the item to the end of the bucket list.
+        SET key_value TO [key, item]
+        bucket_list.append(key_value)
+        self.packages_count += 1
+        RETURN True
+    DEFINE FUNCTION search(self, key):
+        # get the bucket list where this key would be.
+        SET bucket TO hash(key) % len(self.table)
+        SET bucket_list TO self.table[bucket]
+        # OUTPUT(bucket_list)
+        # search FOR the key IN the bucket list
+        FOR kv IN bucket_list:
+            # OUTPUT (key_value)
+            IF kv[0] EQUALS key:
+                RETURN kv[1]  # value
+        RETURN None
+    DEFINE FUNCTION remove(self, key):
+        # get the bucket list where this item will be removed from.
+        SET bucket TO hash(key) % len(self.table)
+        SET bucket_list TO self.table[bucket]
+        # remove the item from the bucket list IF it is present.
+        FOR kv IN bucket_list:
+            # OUTPUT(key_value)
+            IF kv[0] EQUALS key:
+                bucket_list.remove([kv[0], kv[1]])
+    DEFINE FUNCTION get_all_keys(self):
+        SET all_keys TO set()
+        FOR bucket_list IN self.table:
+            FOR kv_pair IN bucket_list:
+                SET key TO kv_pair[0]
+                all_keys.add(key)
+        RETURN list(all_keys)

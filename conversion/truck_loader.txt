@@ -1,0 +1,215 @@
+from wgups_implementation.truck IMPORT DeliveryTruck
+
+from wgups_implementation.list_search IMPORT list_search
+
+
+
+
+
+DEFINE FUNCTION load_packages_to_truck(packages, address_list, distance_table_list):
+
+    SET truck_capacity TO 16
+
+    SET departure_time1 TO '8:00'
+
+    SET departure_time2 TO '9:10'
+
+    SET departure_time3 TO '11:00'
+
+    SET truck1 TO DeliveryTruck(1, departure_time1, address_list, distance_table_list)
+
+    SET truck2 TO DeliveryTruck(2, departure_time2, address_list, distance_table_list)
+
+    SET truck3 TO DeliveryTruck(3, departure_time3, address_list, distance_table_list)
+
+    SET trucks TO [truck1, truck2, truck3]
+
+    SET special_instructions_array TO []
+
+    SET deadline_array TO []
+
+    SET no_action_array TO []
+
+    SET follow TO []
+
+    SET hub_packages TO []
+
+    """This is IN order to have all package id's IN the 'hub' array"""
+
+    FOR i IN range(1, packages.packages_count + 1):
+
+        hub_packages.append(int(i))
+
+    """I want it to go through every package IN the package list"""
+
+    FOR i IN range(1, packages.packages_count + 1):
+
+        SET package TO packages.search(i)
+
+        IF package.special_notes_exists:
+
+            special_instructions_array.append(package)
+
+            """The instructions state only truck 2 will be
+
+            designated FOR the specific truck instruction
+
+            but I would like FOR it to be expandable.
+
+            I'm only addressing the truck and with 
+
+            categories because the incorrect address
+
+            and delayed categories end up putting 
+
+            the package on hold status"""
+
+            IF package.special_notes[0] EQUALS 't':
+
+                """This is ensuring that the package is still 
+
+                IN the hub to avoid double loading"""
+
+                IF list_search(hub_packages, package.pid):
+
+                    hub_packages.remove(package.pid)
+
+                    SET truck_number TO int(package.special_notes[1])
+
+                    SET truck_for_loading TO trucks[truck_number - 1]
+
+                    truck_for_loading.load_package(package)
+
+                    truck_for_loading.address_id_array.append(package.address_id)
+
+                """This module is FOR the packages that are to be on the same delivery truck as others"""
+
+            ELSEIF package.special_notes[0] EQUALS 'w':
+
+                SET intermediate_string TO ''
+
+                FOR ii IN package.special_notes[1:]:
+
+                    IF ii EQUALS ' ':
+
+                        continue
+
+                    ELSEIF ii EQUALS ',':
+
+                        follow.append(intermediate_string)
+
+                        SET intermediate_string TO ''
+
+                    ELSE:
+
+                        SET intermediate_string TO intermediate_string + str(ii)
+
+                IF list_search(hub_packages, package.pid):
+
+                    hub_packages.remove(package.pid)
+
+                    truck1.load_package(package)
+
+                    truck1.address_id_array.append(package.address_id)
+
+                FOR ii IN follow:
+
+                    IF list_search(hub_packages, int(ii)):
+
+                        SET additional_package TO packages.search(int(ii))
+
+                        truck1.load_package(additional_package)
+
+                        hub_packages.remove(int(ii))
+
+                        truck1.address_id_array.append(additional_package.address_id)
+
+            ELSEIF package.special_notes[0] EQUALS 'i':
+
+                truck3.load_package(package)
+
+                hub_packages.remove(int(package.pid))
+
+                truck3.address_id_array.append(package.address_id)
+
+            ELSEIF package.special_notes[0] EQUALS 'd':
+
+                truck2.load_package(package)
+
+                hub_packages.remove(int(package.pid))
+
+                truck2.address_id_array.append(package.address_id)
+
+            ELSE:
+
+                OUTPUT('Invalid INPUT IN special instructions field')
+
+        ELSEIF package.delivery_deadline != 'EOD':
+
+            IF list_search(hub_packages, package.pid) is not None:
+
+                truck1.load_package(package)
+
+                hub_packages.remove(int(package.pid))
+
+                truck1.address_id_array.append(package.address_id)
+
+            deadline_array.append(package)
+
+        ELSE:
+
+            no_action_array.append(package)
+
+
+
+    """This part is to ensure that it is pulling the all packages
+
+    that are going to the same address"""
+
+    FOR i IN hub_packages:
+
+        SET package TO packages.search(i)
+
+        IF list_search(truck1.address_id_array, package.address_id) is not None:
+
+            IF len(truck1.packages_on) < 16:
+
+                hub_packages.remove(int(package.pid))
+
+                truck1.load_package(package)
+
+            ELSE:
+
+                hub_packages.remove(package.pid)
+
+                truck3.load_package(package)
+
+                truck3.address_id_array.append(package.address_id)
+
+        IF list_search(truck2.address_id_array, package.address_id) is not None:
+
+            truck2.load_package(package)
+
+            hub_packages.remove(int(package.pid))
+
+
+
+        IF list_search(truck3.address_id_array, package.address_id) is not None:
+
+            IF list_search(hub_packages, package.pid):
+
+                hub_packages.remove(package.pid)
+
+                truck3.load_package(package)
+
+
+
+    FOR i IN hub_packages:
+
+        SET package TO packages.search(i)
+
+        truck3.load_package(package)
+
+
+
+    RETURN trucks

@@ -36,7 +36,7 @@ p_tracker = PackageTracker(total_event_log, initial_state)
 # Console application loop
 welcome_message = ("Welcome to WGUPS Implementation\n1. See Total Mileage\n2. See Final Package Status\n3. See All "
                    "Package Status By Time\n4. See Single Package Status By Time\n5. See All Events\n6. List All "
-                   "States Cached Within PackageTracking Object\n7. See Number Of Packages Per Truck\n8.Exit Program")
+                   "States Cached Within PackageTracking Object\n7. See Number Of Packages Per Truck\n8. Exit Program")
 
 while True:
     print(welcome_message)
